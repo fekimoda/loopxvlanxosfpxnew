@@ -1,0 +1,61 @@
+import netmiko
+import getpass
+from netmiko import ConnectHandler
+
+
+connectioninfo = {
+    "device_type": "cisco_ios",
+    "host": "192.168.56.101",
+    "username" : "cisco",
+    "password": "",
+    "secret": ""
+}
+
+print("Device Menu")
+connectioninfo['username'] = input("Input Device username: ")
+connectioninfo['password'] = getpass.getpass("Device password: ")
+connectioninfo['secret'] = getpass.getpass("Device Secret: ")
+choice = input("Create Loopback (1) Ospf (2)  create vlan (3): ")
+
+if choice == "1":
+    session = netmiko.ConnectHandler(**connectioninfo)
+
+    config_commands = ["int loopback1", "ip address 192.168.1.2 255.255.255.0", "no shut", "exit"]
+      
+    output = session.send_command("show ip interface brief")
+    print("{}\n".format(output))
+
+    session.enable()
+    setConfig = session.send_config_set(config_commands)
+    print("{}\n".format(output))
+
+
+
+elif choice == "2":
+    session = netmiko.ConnectHandler(**connectioninfo)
+
+
+    config_commands = ["router ospf 10", "network 192.168.1.2 0.0.0.255 area 0", "exit"]
+
+    output = session.send_command("show ip ospf")
+    print("{}\n".format(output))
+
+    session.enable()
+    setConfig = session.send_config_set(config_commands)
+    print("{}\n".format(output))
+
+elif choice == "3":
+    session = netmiko.ConnectHandler(**connectioninfo)
+    session.enable()
+
+    output = session.send_command("show vlan brief")
+    print("{}\n".format(output))
+
+    for vlan in range (10,51,10):
+        config_commands = ['vlan ' + str(vlan), "name HR" + str(vlan)]
+
+        output = session.send_config_set(config_commands)
+        print("{}\n".format(output))
+
+    output = session.send_command("show vlan brief")
+    print("{}\n".format(output))
